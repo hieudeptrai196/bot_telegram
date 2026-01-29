@@ -21,7 +21,7 @@ export class GNewsService implements INewsService {
   async getTopHeadlines(): Promise<News[]> {
     try {
       // Using the parameters provided: general category, vi lang, vn country, max 3
-      const url = `${this.apiUrl}?category=general&lang=vi&country=vn&max=3&apikey=${this.apiKey}`;
+      const url = `${this.apiUrl}?category=general&lang=vi&country=vn&max=5&apikey=${this.apiKey}`;
       this.logger.log(`Fetching news from ${url}`);
       
       const { data } = await firstValueFrom(this.httpService.get(url));
