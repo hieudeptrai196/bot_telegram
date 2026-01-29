@@ -2,7 +2,13 @@
   "crons": [
     {
       "path": "/api/news/broadcast",
-      "schedule": "20 11 * * *"
+      "schedule": "25 4 * * *"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
     }
   ]
 }
