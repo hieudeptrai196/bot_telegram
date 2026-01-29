@@ -83,7 +83,7 @@ export class TelegramService implements INotificationService {
        else icon = `${position}.`;
 
        message += `${icon} <b>${s.teamName.toUpperCase()}</b>\n`;
-       message += `   🏆 ${s.points} điểm  •  🎮 ${s.playedGames} trận  •  🥅 ${s.goalDifference > 0 ? '+' : ''}${s.goalDifference}\n\n`;
+       message += `🏆 ${s.points} điểm  •  🎮 ${s.playedGames} trận  •  🥅 ${s.goalDifference > 0 ? '+' : ''}${s.goalDifference}\n\n`;
     });
 
     try {
