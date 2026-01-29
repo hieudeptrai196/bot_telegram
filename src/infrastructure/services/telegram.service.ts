@@ -17,14 +17,18 @@ export class TelegramService implements INotificationService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
-    const chatId = this.configService.get<string>('TELEGRAM_CHAT_ID');
+    const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN')?.trim();
+    const chatId = this.configService.get<string>('TELEGRAM_CHAT_ID')?.trim();
 
     if (!token) {
-      throw new Error('TELEGRAM_BOT_TOKEN is not defined in environment variables');
+      throw new Error(
+        'TELEGRAM_BOT_TOKEN is not defined in environment variables',
+      );
     }
     if (!chatId) {
-      throw new Error('TELEGRAM_CHAT_ID is not defined in environment variables');
+      throw new Error(
+        'TELEGRAM_CHAT_ID is not defined in environment variables',
+      );
     }
 
     this.token = token;
@@ -35,7 +39,7 @@ export class TelegramService implements INotificationService {
   async sendNewsUpdate(newsList: News[]): Promise<void> {
     if (newsList.length === 0) return;
 
-    let message = '<b>📢 Tin tức mới nhất:</b>\n\n';
+    let message = '<b>📢 TIN TỨC MỚI NHẤT</b>\n\n';
 
     newsList.forEach((news, index) => {
       message += `<b>${index + 1}. ${news.title}</b>\n`;
@@ -43,8 +47,7 @@ export class TelegramService implements INotificationService {
         message += `${news.description}\n`;
       }
       const date = new Date(news.publishedAt).toLocaleDateString('vi-VN');
-      message += `<i>${date}</i> - ${news.source}\n`;
-      message += `<a href="${news.url}">Xem thêm</a>\n\n`;
+      message += `📅 ${date} • 📰 ${news.source} • <a href="${news.url}">Xem thêm</a>\n\n`;
     });
 
     try {
@@ -79,21 +82,8 @@ export class TelegramService implements INotificationService {
        else if (position === 3) icon = '🥉';
        else icon = `${position}.`;
 
-       const teamName = `<b>${s.teamName}</b>`;
-       
-       // Telegram doesn't support SVG previews. Convert to PNG using a proxy.
-       // We use wsrv.nl (images.weserv.nl) which is a reliable free image proxy.
-       let crestUrl = s.crest;
-       if (crestUrl && crestUrl.endsWith('.svg')) {
-         crestUrl = `https://wsrv.nl/?url=${crestUrl}&output=png`;
-       }
-       
-       // Link to the logo - The first link in the message will be used for the preview image.
-       // Using an invisible character inside the link if we want just the preview, but user liked logo indicator implies visible is ok.
-       // Let's make it look cleaner.
-       
-       message += `${icon} <b>${s.teamName.toUpperCase()}</b> <a href="${crestUrl}">⚽</a>\n`;
-       message += `   � ${s.points} điểm  •  🎮 ${s.playedGames} trận  •  🥅 ${s.goalDifference > 0 ? '+' : ''}${s.goalDifference}\n\n`;
+       message += `${icon} <b>${s.teamName.toUpperCase()}</b>\n`;
+       message += `   🏆 ${s.points} điểm  •  🎮 ${s.playedGames} trận  •  🥅 ${s.goalDifference > 0 ? '+' : ''}${s.goalDifference}\n\n`;
     });
 
     try {

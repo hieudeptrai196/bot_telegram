@@ -10,7 +10,8 @@ export class FootballService implements IFootballService {
   private readonly logger = new Logger(FootballService.name);
   // Using direct URL. User used cors-anywhere but for backend direct is better.
   // La Liga code is PD.
-  private readonly apiUrl = 'https://api.football-data.org/v4/competitions/PD/standings';
+  private readonly apiUrl =
+    'https://api.football-data.org/v4/competitions/PD/standings';
 
   constructor(
     private readonly httpService: HttpService,
@@ -20,7 +21,14 @@ export class FootballService implements IFootballService {
   async getLaLigaStandings(): Promise<Standing[]> {
     try {
       this.logger.log('Fetching La Liga Standings...');
-      const token = this.configService.get<string>('FOOTBALL_API_TOKEN');
+      const token = this.configService.get<string>('FOOTBALL_API_TOKEN')?.trim();
+      
+      if (!token) {
+        throw new Error('FOOTBALL_API_TOKEN is not defined in environment variables');
+      }
+
+      this.logger.debug(`Using token: ${token.substring(0, 4)}...`); // Debug log (masked)
+      
       const response = await firstValueFrom(
         this.httpService.get(this.apiUrl, {
           headers: { 'X-Auth-Token': token },
@@ -50,8 +58,10 @@ export class FootballService implements IFootballService {
         item.team.crest
       ));
     } catch (error) {
-      this.logger.error('Error fetching standings', error);
-      // Fallback or rethrow
+      this.logger.error(
+        'Error fetching standings',
+        error.response?.data || error.message,
+      );
       throw error;
     }
   }
