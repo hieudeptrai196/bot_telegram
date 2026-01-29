@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/news/broadcast",
-      "schedule": "25 4 * * *"
+      "schedule": "32 4 * * *"
     }
   ],
   "rewrites": [
