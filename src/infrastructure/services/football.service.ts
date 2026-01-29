@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { IFootballService } from '../../domain/interfaces/football-service.interface';
 import { Standing } from '../../domain/models/standing.model';
@@ -10,17 +11,19 @@ export class FootballService implements IFootballService {
   // Using direct URL. User used cors-anywhere but for backend direct is better.
   // La Liga code is PD.
   private readonly apiUrl = 'https://api.football-data.org/v4/competitions/PD/standings';
-  // Using the token provided by user.
-  private readonly token = 'e9c7ee3751a94bdda80e19814331605a';
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async getLaLigaStandings(): Promise<Standing[]> {
     try {
       this.logger.log('Fetching La Liga Standings...');
+      const token = this.configService.get<string>('FOOTBALL_API_TOKEN');
       const response = await firstValueFrom(
         this.httpService.get(this.apiUrl, {
-          headers: { 'X-Auth-Token': this.token },
+          headers: { 'X-Auth-Token': token },
         }),
       );
 

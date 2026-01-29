@@ -17,8 +17,18 @@ export class TelegramService implements INotificationService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.token = this.configService.get<string>('TELEGRAM_BOT_TOKEN') ?? '7763521429:AAEFFBdhlb4IPDWLeRZ4WiqTX6-ePmqI7yQ';
-    this.chatId = this.configService.get<string>('TELEGRAM_CHAT_ID') ?? '@bot_hieu_dep_trai';
+    const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
+    const chatId = this.configService.get<string>('TELEGRAM_CHAT_ID');
+
+    if (!token) {
+      throw new Error('TELEGRAM_BOT_TOKEN is not defined in environment variables');
+    }
+    if (!chatId) {
+      throw new Error('TELEGRAM_CHAT_ID is not defined in environment variables');
+    }
+
+    this.token = token;
+    this.chatId = chatId;
     this.apiUrl = `https://api.telegram.org/bot${this.token}/sendMessage`;
   }
 
@@ -29,10 +39,12 @@ export class TelegramService implements INotificationService {
 
     newsList.forEach((news, index) => {
       message += `<b>${index + 1}. ${news.title}</b>\n`;
-      // Format date slightly if possible, but keeping it simple for now
+      if (news.description) {
+        message += `${news.description}\n`;
+      }
       const date = new Date(news.publishedAt).toLocaleDateString('vi-VN');
       message += `<i>${date}</i> - ${news.source}\n`;
-      message += `<a href="${news.url}">Đọc tiếp...</a>\n\n`;
+      message += `<a href="${news.url}">Xem thêm</a>\n\n`;
     });
 
     try {
