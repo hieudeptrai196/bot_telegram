@@ -2,7 +2,11 @@
   "crons": [
     {
       "path": "/api/news/broadcast",
-      "schedule": "32 4 * * *"
+      "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/football/broadcast-laliga",
+      "schedule": "0 2 * * *"
     }
   ],
   "rewrites": [

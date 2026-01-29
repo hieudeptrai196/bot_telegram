@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { INotificationService } from '../../domain/interfaces/notification-service.interface';
 import { News } from '../../domain/models/news.model';
+import { Standing } from '../../domain/models/standing.model';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -16,8 +17,8 @@ export class TelegramService implements INotificationService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.token = this.configService.get<string>('TELEGRAM_BOT_TOKEN') ?? '';
-    this.chatId = this.configService.get<string>('TELEGRAM_CHAT_ID') ?? '';
+    this.token = this.configService.get<string>('TELEGRAM_BOT_TOKEN') ?? '7763521429:AAEFFBdhlb4IPDWLeRZ4WiqTX6-ePmqI7yQ';
+    this.chatId = this.configService.get<string>('TELEGRAM_CHAT_ID') ?? '@bot_hieu_dep_trai';
     this.apiUrl = `https://api.telegram.org/bot${this.token}/sendMessage`;
   }
 
@@ -25,26 +26,80 @@ export class TelegramService implements INotificationService {
     if (newsList.length === 0) return;
 
     let message = '<b>📢 Tin tức mới nhất:</b>\n\n';
-    
+
     newsList.forEach((news, index) => {
-        message += `<b>${index + 1}. ${news.title}</b>\n`;
-        // Format date slightly if possible, but keeping it simple for now
-        const date = new Date(news.publishedAt).toLocaleDateString('vi-VN');
-        message += `<i>${date}</i> - ${news.source}\n`;
-        message += `<a href="${news.url}">Đọc tiếp...</a>\n\n`;
+      message += `<b>${index + 1}. ${news.title}</b>\n`;
+      // Format date slightly if possible, but keeping it simple for now
+      const date = new Date(news.publishedAt).toLocaleDateString('vi-VN');
+      message += `<i>${date}</i> - ${news.source}\n`;
+      message += `<a href="${news.url}">Đọc tiếp...</a>\n\n`;
     });
 
     try {
       this.logger.log(`Sending message to ${this.chatId}`);
-      await firstValueFrom(this.httpService.post(this.apiUrl, {
-        chat_id: this.chatId,
-        text: message,
-        parse_mode: 'HTML',
-      }));
+      await firstValueFrom(
+        this.httpService.post(this.apiUrl, {
+          chat_id: this.chatId,
+          text: message,
+          parse_mode: 'HTML',
+        }),
+      );
       this.logger.log('Message sent successfully');
     } catch (error) {
-        this.logger.error('Error sending telegram message', error.response?.data || error.message);
-        throw error;
+      this.logger.error(
+        'Error sending telegram message',
+        error.response?.data || error.message,
+      );
+      throw error;
+    }
+  }
+
+  async sendStandings(standings: Standing[]): Promise<void> {
+    if (standings.length === 0) return;
+
+    let message = '<b>🇪🇸 BẢNG XẾP HẠNG LA LIGA MỚI NHẤT</b>\n\n';
+    
+    standings.forEach(s => {
+       const position = s.position;
+       let icon = '';
+       if (position === 1) icon = '🥇';
+       else if (position === 2) icon = '🥈';
+       else if (position === 3) icon = '🥉';
+       else icon = `${position}.`;
+
+       const teamName = `<b>${s.teamName}</b>`;
+       
+       // Telegram doesn't support SVG previews. Convert to PNG using a proxy.
+       // We use wsrv.nl (images.weserv.nl) which is a reliable free image proxy.
+       let crestUrl = s.crest;
+       if (crestUrl && crestUrl.endsWith('.svg')) {
+         crestUrl = `https://wsrv.nl/?url=${crestUrl}&output=png`;
+       }
+       
+       // Link to the logo - The first link in the message will be used for the preview image.
+       // Using an invisible character inside the link if we want just the preview, but user liked logo indicator implies visible is ok.
+       // Let's make it look cleaner.
+       
+       message += `${icon} <b>${s.teamName.toUpperCase()}</b> <a href="${crestUrl}">⚽</a>\n`;
+       message += `   � ${s.points} điểm  •  🎮 ${s.playedGames} trận  •  🥅 ${s.goalDifference > 0 ? '+' : ''}${s.goalDifference}\n\n`;
+    });
+
+    try {
+      this.logger.log(`Sending standings to ${this.chatId}`);
+      await firstValueFrom(
+        this.httpService.post(this.apiUrl, {
+          chat_id: this.chatId,
+          text: message,
+          parse_mode: 'HTML',
+        }),
+      );
+      this.logger.log('Standings sent successfully');
+    } catch (error) {
+      this.logger.error(
+        'Error sending telegram standings',
+        error.response?.data || error.message,
+      );
+      throw error;
     }
   }
 }

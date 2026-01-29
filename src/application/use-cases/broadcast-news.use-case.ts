@@ -8,7 +8,8 @@ export class BroadcastNewsUseCase {
 
   constructor(
     @Inject(INewsService) private readonly newsService: INewsService,
-    @Inject(INotificationService) private readonly notificationService: INotificationService,
+    @Inject(INotificationService)
+    private readonly notificationService: INotificationService,
   ) {}
 
   async execute(): Promise<any> {
@@ -22,7 +23,10 @@ export class BroadcastNewsUseCase {
       this.logger.log(`Found ${news.length} articles. Sending to Telegram...`);
       await this.notificationService.sendNewsUpdate(news);
       this.logger.log('Broadcast completed successfully.');
-      return { message: 'Broadcast completed successfully', count: news.length };
+      return {
+        message: 'Broadcast completed successfully',
+        count: news.length,
+      };
     } catch (error) {
       this.logger.error('Error broadcasting news', error);
       throw error;

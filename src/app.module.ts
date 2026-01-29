@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { NewsModule } from './news.module';
+import { FootballModule } from './football.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -9,7 +10,8 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    NewsModule
+    NewsModule,
+    FootballModule
   ],
   controllers: [AppController],
   providers: [AppService],
