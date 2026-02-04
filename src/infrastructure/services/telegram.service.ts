@@ -5,6 +5,7 @@ import { INotificationService } from '../../domain/interfaces/notification-servi
 import { News } from '../../domain/models/news.model';
 import { Standing } from '../../domain/models/standing.model';
 import { MatchOdds } from '../../domain/models/match-odds.model';
+import { Email } from '../../domain/models/email.model';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -161,5 +162,65 @@ export class TelegramService implements INotificationService {
         // Continue sending other leagues even if one fails
       }
     }
+  }
+
+  async sendEmailUpdates(emails: Email[]): Promise<void> {
+    let message = '';
+    
+    if (emails.length === 0) {
+       message = '<b>📭 KHÔNG CÓ EMAIL MỚI</b>\n\n';
+       message += 'Hiện tại không có email nào chưa đọc trong hộp thư của bạn. Bạn đã cập nhật hết rồi! 🎉';
+    } else {
+       message = '<b>🔔 THÔNG BÁO EMAIL CHƯA ĐỌC MỚI</b>\n';
+       message += '⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n\n';
+    
+       emails.forEach((email, index) => {
+         const date = new Date(email.receivedAt).toLocaleString('vi-VN', {
+           hour: '2-digit',
+           minute: '2-digit',
+           day: '2-digit',
+           month: '2-digit',
+         });
+    
+         message += `🔹 <b>${this.escapeHtml(email.subject)}</b>\n`;
+         
+         message += `👤 <code>${this.escapeHtml(email.sender)}</code>\n`;
+         message += `🕒 <code>${date}</code>\n`;
+         
+         const preview = email.snippet ? email.snippet.trim() : 'Không có nội dung xem trước';
+         message += `💬 <i>${this.escapeHtml(preview)}...</i>\n`;
+    
+         if (index < emails.length - 1) {
+           message += '\n───────────────\n\n';
+         }
+       });
+    }
+
+    try {
+      this.logger.log(`Sending email updates (count: ${emails.length}) to ${this.chatId}`);
+      await firstValueFrom(
+        this.httpService.post(this.apiUrl, {
+          chat_id: this.chatId,
+          text: message,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true, 
+        }),
+      );
+    } catch (error: any) {
+      this.logger.error(
+        'Error sending telegram email updates',
+        error.response?.data || error.message,
+      );
+      throw error;
+    }
+  }
+
+  private escapeHtml(unsafe: string): string {
+    return unsafe
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 }

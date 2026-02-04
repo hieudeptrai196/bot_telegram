@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { NewsModule } from './news.module';
 import { FootballModule } from './football.module';
 import { BettingModule } from './betting.module';
+import { MailModule } from './mail.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -13,7 +14,8 @@ import { ConfigModule } from '@nestjs/config';
     }),
     NewsModule,
     FootballModule,
-    BettingModule
+    BettingModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
