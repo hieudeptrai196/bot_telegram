@@ -1,16 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/news/broadcast",
-      "schedule": "0 23 * * *"
-    },
-    {
-      "path": "/api/football/broadcast-laliga",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/betting/broadcast-odds",
-      "schedule": "0 7 * * *"
+      "path": "/api/mail/unread",
+      "schedule": "0 1 * * *"
     }
   ],
   "rewrites": [
